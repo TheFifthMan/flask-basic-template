@@ -1,20 +1,25 @@
 from flask import Flask
-from config import Configuration
+from config import Configuration,Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate 
 import logging
+from celery import Celery
 from logging.handlers import SMTPHandler,RotatingFileHandler
 import os
 
 db = SQLAlchemy()
 migrate = Migrate()
+# 声明例一个celery实例
+# 这里的__name__ 用来代替app.name
+celery = Celery(__name__,broker=Config.CELERY_BROKER_URL)
 
 def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(Configuration[config_name])
     db.init_app(app)
     migrate.init_app(app,db)
-   
+    # 引入celery
+    celery.conf.update(app.config)
     # 在这里注册蓝图
     from app.errors import error_bp
     app.register_blueprint(error_bp)

@@ -1,5 +1,6 @@
-from app import create_app,db
+from app import create_app,db,celery
 app = create_app('default')
+app.app_context().push()
 
 from app.index.models import *
 @app.shell_context_processor
